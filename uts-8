@@ -1,0 +1,166 @@
+#include <iostream>
+#include <fstream>
+#include <stdio.h>
+#include <sstream>
+#include <math.h>
+
+using namespace std;
+
+void dec_to_hex(int& n, unsigned int dec_num, char hex_num[]) {
+	n = 0;
+	while (dec_num != 0) {
+		int temp = 0;
+		temp = dec_num % 16;
+		if (temp < 10) {
+			hex_num[n] = temp + 48;
+			n++;
+		}
+		else {
+			hex_num[n] = temp + 55;
+			n++;
+		}
+		dec_num = dec_num / 16;
+	}
+}
+
+void dec_to_bin(int& n, int bin_num[], unsigned int dec_num) {
+	n = 0;
+	while (dec_num > 0) {
+		bin_num[n] = dec_num % 2;
+		dec_num = dec_num / 2;
+		n++;
+	}
+}
+
+void bin_to_dec(unsigned int& dec_num, string bin_str) {
+	dec_num = 0;
+	int index = 0;
+	for (int i = bin_str.size() - 1; i >= 0; i--) {
+		if (bin_str[i] == '1') dec_num += pow(2, index);
+		index++;
+	}
+}
+
+void hex_to_dec(unsigned int& dec_num, string hex_code) {
+	int base = 1;
+	dec_num = 0;
+	for (int i = hex_code.size() - 1; i >= 0; i--) {
+		if (hex_code[i] >= '0' && hex_code[i] <= '9') {
+			dec_num += (hex_code[i] - 48) * base;
+			base = base * 16;
+		}
+		else if (hex_code[i] >= 'A' && hex_code[i] <= 'F') {
+			dec_num += (hex_code[i] - 55) * base;
+			base = base * 16;
+		}
+	}
+}
+
+void hex_to_char(char hex_num[], string& utf) {
+	stringstream ss;
+	int index;
+	for (int i = 0; i < utf.size(); i += 2) {
+		istringstream(utf.substr(i, 2)) >> hex >> index;
+		ss << (char)index;
+	}
+	utf = ss.str();
+}
+
+void get_bytes(unsigned int dec_num, int size, string& bin_str, string byte_1, string byte_2, string byte_3, string byte_4) {
+	if (dec_num <= 127) {
+		if (size < 7) {
+			for (int i = 0; i < 7 - size; i++) bin_str = "0" + bin_str;
+		}
+		byte_1 = "0" + bin_str.substr(bin_str.size() - 7, bin_str.size() - 1);
+		bin_str = byte_1;
+	}
+	else if (dec_num <= 2047) {
+		if (size < 11) {
+			for (int i = 0; i < 11 - size; i++) bin_str = "0" + bin_str;
+		}
+		byte_2 = "10" + bin_str.substr(bin_str.size() - 6, bin_str.size() - 1);
+		byte_1 = "110" + bin_str.substr(bin_str.size() - 11, bin_str.size() - 6);
+		bin_str = byte_1 + byte_2;
+	}
+	else if (dec_num <= 65535) {
+		if (size < 16) {
+			for (int i = 0; i < 16 - size; i++) bin_str = "0" + bin_str;
+		}
+		byte_3 = "10" + bin_str.substr(bin_str.size() - 6, bin_str.size() - 1);
+		byte_2 = "10" + bin_str.substr(bin_str.size() - 12, bin_str.size() - 10);
+		byte_1 = "1110" + bin_str.substr(bin_str.size() - 16, bin_str.size() - 12);
+		bin_str = byte_1 + byte_2 + byte_3;
+	}
+	else {
+		if (size < 21) {
+			for (int i = 0; i < 21 - size; i++) bin_str = "0" + bin_str;
+		}
+		byte_4 = "10" + bin_str.substr(bin_str.size() - 6, bin_str.size() - 1);
+		byte_3 = "10" + bin_str.substr(bin_str.size() - 12, bin_str.size() - 10);
+		byte_2 = "10" + bin_str.substr(bin_str.size() - 18, bin_str.size() - 16);
+		byte_1 = "11110" + bin_str.substr(bin_str.size() - 21, bin_str.size() - 18);
+		bin_str = byte_1 + byte_2 + byte_3 + byte_4;
+	}
+}
+
+int main() {
+	int n, bin_num[32], size;
+	unsigned int dec_num;
+	char hex_num[100];
+	string utf, bin_str, byte_1, byte_2, byte_3, byte_4;
+	cout << "Unikodas/UTF-8" << endl << endl << "Iveskite desimtaini skaiciu: ";
+	cin >> dec_num;
+	dec_to_hex(n, dec_num, hex_num);
+	cout << "Skaiciaus unikodas: U+";
+	for (int i = 0; i < 4 - n; i++) cout << "0";
+	for (int i = n - 1; i >= 0; i--) cout << hex_num[i];
+	dec_to_bin(n, bin_num, dec_num);
+	bin_str = "";
+	for (int i = n - 1; i >= 0; i--) bin_str.push_back(bin_num[i] + '0');
+	size = bin_str.size();
+	get_bytes(dec_num, size, bin_str, byte_1, byte_2, byte_3, byte_4);
+	bin_to_dec(dec_num, bin_str);
+	dec_to_hex(n, dec_num, hex_num);
+	utf = "";
+	for (int i = n - 1; i >= 0; i--) utf += hex_num[i];
+	cout << endl << "Skaiciaus UTF-8 kodas: ";
+	for (int i = 0; i < utf.size(); i++) {
+		cout << utf[i];
+		if (i % 2 != 0) cout << " ";
+	}
+	hex_to_char(hex_num, utf);
+	cout << endl << "Skaiciaus simbolis: " << utf;
+	cout << endl << endl << "Failo atkodavimas: ";
+	char c;
+	unsigned char uc;
+	unsigned int ui, dec_code[128];
+	string hex_code[128];
+	ifstream in_1("386intel.txt"), in_2("CP437.txt");
+	ofstream out("output.txt");
+	for (int i = 0; i < 128; i++) in_2 >> dec_code[i] >> hex_code[i];
+	while (in_1.get(c)) {
+		uc = c;
+		ui = uc;
+		if (ui >= 128 && ui <= 255) {
+			for (int i = 0; i < 128; i++) {
+				if (ui == dec_code[i]) {
+					hex_to_dec(dec_num, hex_code[i]);
+					dec_to_bin(n, bin_num, dec_num);
+					bin_str = "";
+					for (int i = n - 1; i >= 0; i--) bin_str.push_back(bin_num[i] + '0');
+					size = bin_str.size();
+					get_bytes(dec_num, size, bin_str, byte_1, byte_2, byte_3, byte_4);
+					bin_to_dec(dec_num, bin_str);
+					dec_to_hex(n, dec_num, hex_num);
+					utf = "";
+					for (int i = n - 1; i >= 0; i--) utf += hex_num[i];
+					hex_to_char(hex_num, utf);
+					out << utf;
+					break;
+				}
+			}
+		}
+		else out << uc;
+	}
+	cout << "sekmingas";
+}
