@@ -1,0 +1,68 @@
+
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <thread>
+
+using namespace std;
+
+class turing
+{
+private: 
+	int menusk, galvutes_pozicija_juostoje, pradine_busena = 0, esamoji_busena[100], nauja_busena[100], ind = 0;
+	string failo_pav, juosta;
+	char galvutes_zymeklis[100], esamas_simbolis[100], naujas_simbolis[100], kryptis[100];
+public:
+	void menu() 
+	{
+		cout << "1] Pasirinkite kuri faila norite atidaryti: " << endl;
+		cout << "2] Paleisti visus failus vienu metu: " << endl;
+		cout << "3] Exit" << endl;
+		cin >> menusk;
+		if (menusk < 1 || menusk>3) {
+			cout << "Blogai pasirinkote! Pabandykite is naujo - iveskite skaiciu nuo 1 iki 3 ;)" << endl;
+			menu();
+		}
+		if (menusk == 1) FirstState();
+		else if (menusk == 2) SecondState();
+		else system("cls");
+	}
+
+	void FirstState()
+	{
+		cout << "Iveskite failo pavadinima: " << endl;
+		cin >> failo_pav;
+		system("cls");
+		ifstream fd(failo_pav);
+		fd >> galvutes_pozicija_juostoje;
+		fd.ignore();
+		getline(fd, juosta);
+		cout << juosta << endl;
+		for (int a = 0; a < juosta.size(); a++)
+		{
+			galvutes_zymeklis[a] = ' ';
+			galvutes_zymeklis[galvutes_pozicija_juostoje - 1] = '^';
+			cout << galvutes_zymeklis[a];
+		}
+		cout << endl;
+		while (!fd.eof())
+		{
+			fd >> esamoji_busena[ind];
+			cout << esamoji_busena[ind];
+			ind++;
+		}
+		menu();
+	}
+
+	void SecondState()
+	{
+
+	}
+};
+
+int main()
+{
+	turing o;
+	o.menu();
+	return 0;
+}
