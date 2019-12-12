@@ -1,0 +1,60 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+using namespace std;
+
+void registro_numeris (int dvejetainis, int& x, int& y) {
+	stringstream ss;
+	ss << hex << dvejetainis;
+	string res(ss.str());
+	if (res.size() == 1) res = '0' + res;
+	y = res[0] - 48;
+	x = res[1] - "0";
+}
+
+int main()
+{
+  int registrai[16], flag = 1, komandos[32], dvejetainis, x, y;
+  char prog_atmintis[256];
+  ifstream pirmas("decryptor.bin", ios::in | ios::binary);
+  ifstream antras("q1_encr.txt");
+  ofstream fr("output.txt");
+  pirmas.read(prog_atmintis, 32);
+  for (int i=0; i < 32; i++) komandos[i] = prog_atmintis[i];
+  for (int i=0; i < 32; i+=2) {
+    dvejetainis = komandos[i + 1];
+    registro_numeris(dvejetainis, x, y);
+    if (komandos[i] == 1) registrai[x] ++; //padidina
+    if (komandos[i] == 2) registrai[x] --; //pamazina
+    if (komandos[i] == 3) registrai[x] = registrai[y]; //kopijuoja x registra i y registra
+    if (komandos[i] == 4) registrai[0] = komandos[i + 1]; //kopijuoja konstanta i 0 registra
+    if (komandos[i] == 5) registrai[x] *= 2; //i kaire
+    if (komandos[i] == 6) registrai[x] /= 2; //i desine
+    if (komandos[i] == 7) i = i + komandos[i + 1] - 2; //suolis su konstanta
+    if (komandos[i] == 8) { //suolis su konstanta, flag on
+      if (flag == 1) i = i + komandos[i + 1] - 2;
+    }
+    if (komandos[i] == 9) { //suolis su konstanta, flag off
+      if (flag == 0) i = i + komandos[i + 1] - 2;
+    }
+    if (komandos[i] == 10) { //suolis su konstanta patikus pabaiga in
+      if (flag == 0) i = i + komandos[i + 1] - 2;
+    }
+    if (komandos[i] == 11) break; //pabaiga
+    if (komandos[i] == 12) registrai[x] = registrai[x] + registrai[y]; //sudeda registrus
+    if (komandos[i] == 13) registrai[x] = registrai[x] - registrai[y]; //atema registrus
+    if (komandos[i] == 14) registrai[x] = registrai[x] ^ registrai[y]; //isimtis
+    if (komandos[i] == 15) registrai[x] = registrai[x] | registrai[y]; //arba arba
+    if (komandos[i] == 16) { //skaito viena faila ir nustato failo pabaiga
+    antras.read(prog_atmintis, 1);
+    registrai[x] = prog_atmintis[0];
+    if (antras.eof()) {
+      flag = 0;
+      break;
+      }
+    }
+    if (komandos[i] == 17) fr << (char)registrai[x]; //isveda
+  }
+  return 0;
+}
