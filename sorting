@@ -1,0 +1,87 @@
+#include <iostream>
+#include <stdlib.h>           //library for srand, rand
+#include <time.h>             //library for time
+#include <chrono>             //counting seconds
+#include <ctime>              //elapsed time
+
+using namespace std;
+
+void menu()
+{
+  cout << "-----------------------------------" << endl;
+  cout << "1] Selection sort method" << endl;
+  cout << "2] Shellsort method" << endl;
+  cout << "3] exit" << endl;
+  cout << "-----------------------------------" << endl;
+}
+
+int pasirinkimas( int &n)
+{
+  cout << "-----------------------------------" << endl;
+  cout << "Iveskite koki kieki norite rusiuoti? (100-100000)" << endl;
+  cin >> n;
+  return n;
+}
+
+void selection_sort( int mas [], int min, int n )
+{
+  printf("\e[2J\e[0;0H");
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  start = std::chrono::system_clock::now();
+  for ( int a=0; a<n-1; a++)
+  {
+    min = a;
+    for ( int b=a+1; b<n; b++)
+    {
+      if (mas[b] < mas[min]) min = b;
+    }
+    if ( min != a) swap(mas[a], mas[min]);
+  }
+  for ( int y=0; y < n; y++) cout << mas[y]<< endl;
+  end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end - start; 
+  std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+  cout << "-----------------------------------" << endl;
+  cout << "elapsed time: " << elapsed_seconds.count() << endl;
+}
+
+void shellsort( int mas [], int gap, int n )
+{
+  printf("\e[2J\e[0;0H");
+  int temp, j;
+  bool diff = false;
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  start = std::chrono::system_clock::now();
+  for ( int gap = n/2; gap > 0; gap /= 2)
+  {
+    for ( int i = gap; i < n; i ++)
+    {
+      temp = mas[i];
+      for ( j = i; j >= gap && mas[j-gap] > temp; j -= gap) mas[j] = mas[j-gap];
+      mas[j] = temp;
+    }
+  }
+  for ( int a = 0; a< n; a++) cout <<mas[a]<< endl;
+  end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end - start; 
+  std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+  cout << "-----------------------------------" << endl;
+  cout << "elapsed time: " << elapsed_seconds.count() << endl;
+}
+
+int main()
+{
+  int selection, min, n, gap=10;
+  while (1) {
+    menu();
+    cin >> selection;
+    if ( selection == 3) return 0;
+    pasirinkimas(n);
+    int mas[n];
+    srand (time(NULL));
+    for( int t=0; t<n; t++) mas[t]=rand() % 99900 + 100; //random number generator
+    if (selection == 1) selection_sort( mas , min, n );
+      else if (selection == 2) shellsort( mas, gap, n );
+  }
+  return 0;
+}
