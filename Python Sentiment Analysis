@@ -37,7 +37,6 @@ def i_faila(rez_file):
         rez_file.write("{}, {}, {}, {}, {}".format(listas[1], listas[2], get_pos(listas[0]), get_neg(listas[0]), (get_pos(listas[0])-get_neg(listas[0]))))
         rez_file.write("\n")
         
-
 punctuation_chars = ["'", '"', ",", ".", "!", ":", ";", '#', '@']
 # lists of words to use
 positive_words = []
