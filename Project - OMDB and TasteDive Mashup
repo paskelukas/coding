@@ -1,0 +1,57 @@
+import json
+import requests_with_caching
+def get_movies_from_tastedive(st):
+    url = 'https://tastedive.com/api/similar'
+    params_diction = {}
+    params_diction['q'] = st
+    params_diction['type'] = 'movies'
+    params_diction['limit'] = 5
+    pilnas = requests_with_caching.get(url,  params_diction)
+    data = pilnas.json()
+    #print(data)
+    return data
+
+def extract_movie_titles(listas):
+    new_list = []
+    for a in listas['Similar']['Results']:
+        new_list.append(a['Name'])
+    #print(new_list)
+    return new_list
+
+def get_related_titles(listas):
+    naujas_listas = []
+    for a in listas:
+        naujas_listas.append(extract_movie_titles(get_movies_from_tastedive(a)))
+    #print(naujas_listas)
+    ats_listas = []
+    for a in naujas_listas:
+        for b in a:
+            if b not in ats_listas:
+                ats_listas.append(b)
+    #print(ats_listas)
+    return ats_listas
+
+def get_movie_data(title):
+    url = 'http://www.omdbapi.com/'
+    params_diction = {}
+    params_diction['t'] = title
+    params_diction['r'] = 'json'
+    get_url = requests_with_caching.get(url, params = params_diction)
+    data = get_url.json()
+    #print(data)
+    return data
+
+def get_movie_rating(ats):
+    rating = ''
+    for a in ats['Ratings']:
+        if a['Source'] == 'Rotten Tomatoes':
+            rating = a['Value']
+    if rating != '':
+        rating = int(rating[:2])
+    else: rating = 0
+    return rating
+
+def get_sorted_recommendations(movies_list):
+    related_titles = get_related_titles(movies_list)
+    related_titles = sorted(related_titles, key = lambda movie: (get_movie_rating(get_movie_data(movie)), movie), reverse=True)
+    return related_titles
